@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import Button from "./components/Button";
 import ShoppingListItem from "./components/ShoppingListItem";
+import { shoppingItem } from "./types";
 import { nanoid } from "nanoid";
 
 function App() {
@@ -11,10 +12,12 @@ function App() {
       return JSON.parse(list);
     }
   };
-  const [item, setItem] = useState("");
-  const [shoppingList, setShoppingList] = useState(getLocalStorageItems());
-  const [modalActive, setModalActive] = useState(false);
-  const [currentItem, setCurrentItem] = useState({
+  const [item, setItem] = useState<string>("");
+  const [shoppingList, setShoppingList] = useState<shoppingItem[]>(
+    getLocalStorageItems()
+  );
+  const [modalActive, setModalActive] = useState<boolean>(false);
+  const [currentItem, setCurrentItem] = useState<shoppingItem>({
     id: "",
     name: "",
     purchased: false,
