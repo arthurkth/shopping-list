@@ -1,24 +1,35 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import Button from "./components/Button";
 import ShoppingListItem from "./components/ShoppingListItem";
 import { nanoid } from "nanoid";
 
 function App() {
+  const getLocalStorageItems = () => {
+    const list = localStorage.getItem("shoppingList");
+    if (list !== null) {
+      return JSON.parse(list);
+    }
+  };
   const [item, setItem] = useState("");
-  const [shoppingList, setShoppingList] = useState([
-    {
-      id: nanoid(),
-      name: "item",
-      purchased: false,
-    },
-  ]);
+  const [shoppingList, setShoppingList] = useState(getLocalStorageItems());
   const [modalActive, setModalActive] = useState(false);
   const [currentItem, setCurrentItem] = useState({
     id: "",
     name: "",
     purchased: false,
   });
+
+  useEffect(() => {
+    const items = localStorage.getItem("shoppingList");
+    if (items !== null) {
+      setShoppingList(JSON.parse(items));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("shoppingList", JSON.stringify(shoppingList));
+  }, [shoppingList]);
   const handleAddItem = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (item != "") {
