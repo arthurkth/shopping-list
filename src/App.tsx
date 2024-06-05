@@ -103,16 +103,18 @@ function App() {
     <div>
       <form action="">
         <input
+          id="addItem"
           type="text"
           value={item}
+          className="addItem__input"
           onChange={({ target }) => setItem(target.value)}
         />
         <Button onClick={handleAddItem}>Adicionar Item</Button>
       </form>
       <div>
         <h2>Lista de Compras</h2>
-        {shoppingList.length > 0 ? (
-          shoppingList.map((item) => (
+        {shoppingList !== null ? (
+          shoppingList?.map((item) => (
             <ShoppingListItem
               itemName={item.name}
               purchased={item.purchased}
