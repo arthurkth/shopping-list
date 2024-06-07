@@ -1,147 +1,67 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import Button from "./components/Button";
-import ShoppingListItem from "./components/ShoppingListItem";
-import { shoppingItem } from "./types";
 import { nanoid } from "nanoid";
 
 function App() {
-  const getLocalStorageItems = () => {
-    const list = localStorage.getItem("shoppingList");
+  function loadStorageList() {
+    const list = localStorage.getItem("list");
     if (list !== null) {
       return JSON.parse(list);
     }
-  };
-  const [item, setItem] = useState<string>("");
-  const [shoppingList, setShoppingList] = useState<shoppingItem[]>(
-    getLocalStorageItems()
-  );
-  const [modalActive, setModalActive] = useState<boolean>(false);
-  const [currentItem, setCurrentItem] = useState<shoppingItem>({
-    id: "",
-    name: "",
-    purchased: false,
-  });
+  }
+
+  const [list, setList] = useState(loadStorageList() || []);
+  const [listItem, setListItem] = useState("");
 
   useEffect(() => {
-    const items = localStorage.getItem("shoppingList");
-    if (items !== null) {
-      setShoppingList(JSON.parse(items));
+    const storageList = localStorage.getItem("list");
+    if (storageList !== null) {
+      setList(JSON.parse(storageList));
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("shoppingList", JSON.stringify(shoppingList));
-  }, [shoppingList]);
-  const handleAddItem = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    if (item != "") {
-      setShoppingList((prevItems) => {
-        return [
-          ...prevItems,
-          {
-            id: nanoid(),
-            name: item,
-            purchased: false,
-          },
-        ];
-      });
-    }
-    setItem("");
-  };
+    localStorage.setItem("list", JSON.stringify(list));
+  }, [list]);
 
-  const togglePurchased = (item_id: string) => {
-    setShoppingList((prevItems) => {
-      const updatedList = prevItems.map((item) => {
-        if (item.id === item_id) {
-          return { ...item, purchased: !item.purchased };
-        }
-        return item;
-      });
-      return updatedList;
+  function addItem() {
+    setList((prevItems) => {
+      return [...prevItems, { id: nanoid(), name: listItem }];
     });
-  };
+  }
 
-  const deleteItem = (item_id: string) => {
-    setShoppingList((prevItems) => {
-      return prevItems.filter((item) => item.id !== item_id);
+  function removeItem(id: string) {
+    setList((prevItems) => {
+      return prevItems.filter((item) => item.id !== id);
     });
-    setModalActive(false);
-  };
+  }
 
-  const editItem = (item_id: string) => {
-    const itemToEdit = shoppingList.find((item) => item.id === item_id);
-    if (itemToEdit) {
-      setCurrentItem(itemToEdit);
-      setModalActive(true);
-    }
-  };
-
-  const setNewCurrentItemData = (name: string) => {
-    setCurrentItem({
-      id: currentItem.id,
-      name: name,
-      purchased: currentItem.purchased,
-    });
-  };
-
-  const updateItem = () => {
-    setShoppingList((prevItems) => {
-      const updatedList = prevItems.map((item) => {
-        if (item.id === currentItem.id) {
-          return currentItem;
-        }
-        return item;
-      });
-      return updatedList;
-    });
-
-    setCurrentItem({ id: "", name: "", purchased: false });
-    setModalActive(false);
-  };
   return (
     <div>
-      <form action="">
-        <input
-          id="addItem"
-          type="text"
-          value={item}
-          className="addItem__input"
-          onChange={({ target }) => setItem(target.value)}
-        />
-        <Button onClick={handleAddItem}>Adicionar Item</Button>
-      </form>
-      <div>
-        <h2>Lista de Compras</h2>
-        {shoppingList !== null ? (
-          shoppingList?.map((item) => (
-            <ShoppingListItem
-              itemName={item.name}
-              purchased={item.purchased}
-              key={item.id}
-              togglePurchased={() => {
-                togglePurchased(item.id);
-              }}
-              deleteItem={() => deleteItem(item.id)}
-              editItem={() => {
-                editItem(item.id);
-              }}
-            />
+      <input
+        data-testid="addItemInput"
+        type="text"
+        value={listItem}
+        onChange={({ target }) => setListItem(target.value)}
+      />
+      <Button onClick={addItem}>Click me</Button>
+      <div data-testid="item-list">
+        {list.length > 0 ? (
+          list.map((item, index) => (
+            <div key={index}>
+              <p data-testid={item.id}>{item.name}</p>
+              <Button
+                onClick={() => removeItem(item.id)}
+                dataTestId={`button-${item.id}`}
+              >
+                Remover
+              </Button>
+            </div>
           ))
         ) : (
-          <p>Não há itens a exibir</p>
+          <p>Não há itens para exibir</p>
         )}
-      </div>
-
-      <div className={`modal ${modalActive ? "active" : ""}`}>
-        <input
-          type="text"
-          value={currentItem.name}
-          onChange={({ target }) => {
-            setNewCurrentItemData(target.value);
-          }}
-        />
-        <Button onClick={updateItem}>Confirmar</Button>
       </div>
     </div>
   );

@@ -1,29 +1,47 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import App from "../App";
-import Button from "../components/Button";
-import { describe } from "vitest";
 
 describe("App Component Tests", () => {
-  it("should render the addItem input", () => {
-    const { container } = render(<App />);
-    const element = container.querySelector(".addItem__input");
+  it("should render addItem input", () => {
+    render(<App />);
+    const input = screen.getByTestId("addItemInput");
 
-    expect(element).toBeInTheDocument();
+    expect(input).toBeInTheDocument();
   });
 
-  it("should render the AddItem button", () => {
-    render(<Button onClick={() => {}}>Adicionar Item</Button>);
-    screen.getByText("Adicionar Item");
-  });
+  it("should add an item to list", () => {
+    render(<App />);
 
-  it("should call onClick prop on click", () => {
-    const onClick = vitest.fn();
+    const input = screen.getByTestId("addItemInput");
 
-    render(<Button onClick={onClick}>Adicionar Item</Button>);
-    const button = screen.getByText("Adicionar Item");
+    fireEvent.change(input, { target: { value: "New Item" } });
+
+    const button = screen.getByText(/click me/i);
 
     fireEvent.click(button);
 
-    expect(onClick).toHaveBeenCalled();
+    const newItem = screen.getByText("New Item");
+    expect(newItem).toBeInTheDocument();
+  });
+
+  it("should remove an item from list", () => {
+    render(<App />);
+    const input = screen.getByTestId("addItemInput");
+
+    fireEvent.change(input, { target: { value: "New Item2" } });
+
+    const button = screen.getByText(/click me/i);
+
+    fireEvent.click(button);
+
+    const newItem = screen.getByText("New Item2");
+    const itemId = newItem.getAttribute("data-testid");
+
+    expect(newItem).toBeInTheDocument();
+
+    const buttonRemove = screen.getByTestId(`button-${itemId}`);
+    fireEvent.click(buttonRemove!);
+
+    expect(newItem).not.toBeInTheDocument();
   });
 });

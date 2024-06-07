@@ -1,0 +1,11 @@
+.button__default {
+}
+
+.button__purchased {
+  background: none;
+  text-decoration: line-through;
+}
+
+.button__isPurchasedFalse {
+  text-decoration: none;
+}
