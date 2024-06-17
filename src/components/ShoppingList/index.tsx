@@ -11,23 +11,51 @@ function ShoppingList() {
   }
 
   const [list, setList] = useState(loadStorageList() || []);
+  const [paginatedList, setPaginatedList] = useState([]);
   const [listItem, setListItem] = useState("");
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
+
+  const [modal, setModal] = useState({
+    id: "",
+    name: "",
+    purchased: false,
+  });
   useEffect(() => {
     const storageList = localStorage.getItem("list");
     if (storageList !== null) {
       setList(JSON.parse(storageList));
     }
+    paginate();
   }, []);
 
   useEffect(() => {
     localStorage.setItem("list", JSON.stringify(list));
+    paginate();
   }, [list]);
 
+  useEffect(() => {
+    paginate();
+  }, [page]);
+
+  function paginate() {
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    setPaginatedList(list.slice(start, end));
+  }
+
   function addItem() {
-    setList((prevItems) => {
-      return [...prevItems, { id: nanoid(), name: listItem, purchased: false }];
-    });
+    if (listItem !== "") {
+      setList((prevItems) => {
+        return [
+          ...prevItems,
+          { id: nanoid(), name: listItem, purchased: false },
+        ];
+      });
+      setListItem("");
+    }
+    return false;
   }
 
   function removeItem(id: string) {
@@ -48,18 +76,53 @@ function ShoppingList() {
     });
   }
 
+  function showModal(item) {
+    setModalIsOpen(!modalIsOpen);
+    setModal(item);
+  }
+
+  function updateListItem() {
+    setList((prevItems) => {
+      return prevItems.map((item) => {
+        if (item.id === modal.id) {
+          return modal;
+        }
+        return item;
+      });
+    });
+  }
+
+  function nextPage() {
+    if (hasMorePages()) {
+      setPage((prevValue) => prevValue + 1);
+    }
+  }
+
+  function previousPage() {
+    setPage((prevValue) => prevValue - 1);
+  }
+
+  function hasMorePages() {
+    const totalPages = Math.ceil(list.length / limit);
+    return page < totalPages;
+  }
+
+  function hasPreviousPage() {
+    return page > 1;
+  }
   return (
     <div>
       <input
         data-testid="addItemInput"
         type="text"
         value={listItem}
+        autoFocus
         onChange={({ target }) => setListItem(target.value)}
       />
       <Button onClick={addItem}>Click me</Button>
       <div data-testid="item-list">
-        {list.length > 0 ? (
-          list.map((item, index) => (
+        {paginatedList.length > 0 ? (
+          paginatedList.map((item, index) => (
             <div key={index}>
               <p data-testid={item.id}>{item.name}</p>
               <Button
@@ -75,25 +138,42 @@ function ShoppingList() {
                 {item.purchased ? "Comprado" : "Não Comprado"}
               </Button>
               <Button
-                onClick={() => setModalIsOpen(!modalIsOpen)}
+                onClick={() => showModal(item)}
                 dataTestId={`button-edit-${item.id}`}
               >
                 Editar
               </Button>
-              <dialog open={modalIsOpen}>
-                <p>Editar</p>
-                <form method="dialog">
-                  <label htmlFor="">Novo valor</label>
-                  <input type="text" />
-                  <button>OK</button>
-                </form>
-              </dialog>
             </div>
           ))
         ) : (
           <p>Não há itens para exibir</p>
         )}
+
+        <button onClick={previousPage} disabled={!hasPreviousPage()}>
+          Previous Page
+        </button>
+        <button onClick={nextPage} disabled={!hasMorePages()}>
+          Next Page
+        </button>
       </div>
+      <dialog open={modalIsOpen}>
+        <p>Editar</p>
+        <form method="dialog">
+          <label htmlFor="">Novo valor</label>
+          <input
+            type="text"
+            value={modal ? modal.name : ""}
+            onChange={({ target }) =>
+              setModal({
+                id: modal.id,
+                name: target.value,
+                purchased: modal.purchased,
+              })
+            }
+          />
+          <button onClick={updateListItem}>OK</button>
+        </form>
+      </dialog>
     </div>
   );
 }
