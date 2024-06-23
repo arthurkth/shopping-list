@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Button from "../Button/";
 import { nanoid } from "nanoid";
+import Pagination from "../Pagination";
 
 function ShoppingList() {
   function loadStorageList() {
@@ -90,6 +91,7 @@ function ShoppingList() {
         return item;
       });
     });
+    setModalIsOpen(false);
   }
 
   function nextPage() {
@@ -119,7 +121,7 @@ function ShoppingList() {
         autoFocus
         onChange={({ target }) => setListItem(target.value)}
       />
-      <Button onClick={addItem}>Click me</Button>
+      <Button onClick={addItem}>Adicionar</Button>
       <div data-testid="item-list">
         {paginatedList.length > 0 ? (
           paginatedList.map((item, index) => (
@@ -148,31 +150,31 @@ function ShoppingList() {
         ) : (
           <p>Não há itens para exibir</p>
         )}
-
-        <button onClick={previousPage} disabled={!hasPreviousPage()}>
-          Previous Page
-        </button>
-        <button onClick={nextPage} disabled={!hasMorePages()}>
-          Next Page
-        </button>
+        {paginatedList.length > 0 && (
+          <Pagination
+            hasPreviousPage={hasPreviousPage}
+            hasMorePages={hasMorePages}
+            nextPage={nextPage}
+            previousPage={previousPage}
+          />
+        )}
       </div>
       <dialog open={modalIsOpen}>
         <p>Editar</p>
-        <form method="dialog">
-          <label htmlFor="">Novo valor</label>
-          <input
-            type="text"
-            value={modal ? modal.name : ""}
-            onChange={({ target }) =>
-              setModal({
-                id: modal.id,
-                name: target.value,
-                purchased: modal.purchased,
-              })
-            }
-          />
-          <button onClick={updateListItem}>OK</button>
-        </form>
+        <label htmlFor="newItemValue">Novo valor</label>
+        <input
+          id="newItemValue"
+          type="text"
+          value={modal ? modal.name : ""}
+          onChange={({ target }) =>
+            setModal({
+              id: modal.id,
+              name: target.value,
+              purchased: modal.purchased,
+            })
+          }
+        />
+        <button onClick={updateListItem}>OK</button>
       </dialog>
     </div>
   );

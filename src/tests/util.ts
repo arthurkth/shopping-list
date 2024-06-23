@@ -5,7 +5,7 @@ export function addItemToList() {
 
   fireEvent.change(input, { target: { value: "Mock Item" } });
 
-  const button = screen.getByText(/click me/i);
+  const button = screen.getByText(/adicionar/i);
 
   fireEvent.click(button);
 

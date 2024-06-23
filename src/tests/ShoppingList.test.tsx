@@ -7,10 +7,10 @@ describe("ShoppingList Component Tests", () => {
     Object.defineProperty(window, "localStorage", {
       value: {
         store: {},
-        getItem(key) {
+        getItem(key: number) {
           return this.store[key] || null;
         },
-        setItem(key, value) {
+        setItem(key: number, value: string) {
           this.store[key] = value.toString();
         },
         clear() {
@@ -37,7 +37,7 @@ describe("ShoppingList Component Tests", () => {
 
     fireEvent.change(input, { target: { value: "New Item" } });
 
-    const button = screen.getByText(/click me/i);
+    const button = screen.getByText(/adicionar/i);
 
     fireEvent.click(button);
 
@@ -90,5 +90,30 @@ describe("ShoppingList Component Tests", () => {
 
     const modal = screen.queryByRole("dialog");
     expect(modal).toBeInTheDocument();
+  });
+
+  it("should update the item to the new value added in the modal", () => {
+    render(<ShoppingList />);
+
+    const newItem = addItemToList();
+    const itemId = newItem.getAttribute("data-testid");
+
+    const buttonEdit = screen.getByTestId(`button-edit-${itemId}`);
+    fireEvent.click(buttonEdit);
+
+    const modal = screen.queryByRole("dialog");
+    expect(modal).toBeInTheDocument();
+
+    const input = screen.getByLabelText("Novo valor") as HTMLInputElement;
+    expect(input?.value).toBe("Mock Item");
+
+    fireEvent.change(input!, { target: { value: "New Value" } });
+    expect(input?.value).toBe("New Value");
+
+    const modalButton = screen.getByText("OK");
+    fireEvent.click(modalButton);
+
+    const updatedItem = screen.getByText("New Value");
+    expect(updatedItem).toBeInTheDocument();
   });
 });
